@@ -38,23 +38,30 @@ public class CustomDictionary
      */
     public static BinTrie<CoreDictionary.Attribute> trie;
     public static DoubleArrayTrie<CoreDictionary.Attribute> dat = new DoubleArrayTrie<CoreDictionary.Attribute>();
+    public static int file_num = 59; // 切割的文件数
+    public static HashMap<String, DoubleArrayTrie<CoreDictionary.Attribute> > dats = new HashMap <String, DoubleArrayTrie<CoreDictionary.Attribute> >();
     /**
-     * 第一个是主词典，其他是副词典
+     *第一个是主词典，其他是副词典
+     *改：所有字典一样，均产生一个 DAT
      */
-    public final static String path[] = HanLP.Config.CustomDictionaryPath;
+    public  static String path[] = HanLP.Config.CustomDictionaryPath;
 
     // 自动加载词典
     static
     {
         long start = System.currentTimeMillis();
-        if (!loadMainDictionary(path[0]))
-        {
-            logger.warning("自定义词典" + Arrays.toString(path) + "加载失败");
+        for(int i = 0 ;i < path.length; i++){
+	        if (!loadMainDictionary(path[i]))
+	        {
+	            logger.warning("自定义词典" + Arrays.toString(path) + "加载失败");
+	        }
+	        else
+	        {
+	            logger.info("自定义词典加载成功:" + "耗时" + (System.currentTimeMillis() - start) + "ms");
+	        }
         }
-        else
-        {
-            logger.info("自定义词典加载成功:" + dat.size() + "个词条，耗时" + (System.currentTimeMillis() - start) + "ms");
-        }
+        if(dats.containsKey("CustomDictionary.txt"))
+        	dat = dats.get("CustomDictionary.txt"); // 为了兼容 add 的添加字典形式。
     }
 
     private static boolean loadMainDictionary(String mainPath)
@@ -64,7 +71,7 @@ public class CustomDictionary
         TreeMap<String, CoreDictionary.Attribute> map = new TreeMap<String, CoreDictionary.Attribute>();
         try
         {
-            for (String p : path)
+            String p = mainPath;
             {
                 Nature defaultNature = Nature.n;
                 int cut = p.indexOf(' ');
@@ -80,7 +87,7 @@ public class CustomDictionary
                     catch (Exception e)
                     {
                         logger.severe("配置文件【" + p + "】写错了！" + e);
-                        continue;
+                        //continue;
                     }
                 }
                 logger.info("以默认词性[" + defaultNature + "]加载自定义词典" + p + "中……");
@@ -88,6 +95,7 @@ public class CustomDictionary
                 if (!success) logger.warning("失败：" + p);
             }
             logger.info("正在构建DoubleArrayTrie……");
+            DoubleArrayTrie<CoreDictionary.Attribute> dat = new DoubleArrayTrie<CoreDictionary.Attribute>();
             dat.build(map);
             // 缓存成dat文件，下次加载会快很多
             logger.info("正在缓存词典为dat文件……");
@@ -110,6 +118,8 @@ public class CustomDictionary
                 }
             }
             dat.save(out);
+            String []thisKey = mainPath.split("/");
+            dats.put(thisKey[thisKey.length -1], dat);
             out.close();
         }
         catch (FileNotFoundException e)
@@ -145,6 +155,19 @@ public class CustomDictionary
             String line;
             while ((line = br.readLine()) != null)
             {
+            	String []tmp = line.split(":#:");
+            	if(tmp.length !=3){
+            		continue;
+            	}
+            	line = tmp[0];
+            	line = line.replaceAll(" ", ""); //空格问题？
+            	try{
+            		defaultNature = Nature.valueOf(tmp[1]);
+            	}
+            	catch(Exception e){
+            		System.out.println(tmp[0]+ " "+ tmp[1] + " "+tmp[2]);
+            		e.printStackTrace();
+            	}
                 String[] param = line.split("\\s");
                 if (param[0].length() == 0) continue;   // 排除空行
                 if (HanLP.Config.Normalization) param[0] = CharTable.convert(param[0]); // 正规化
@@ -264,7 +287,14 @@ public class CustomDictionary
                     attributes[i].frequency[j] = byteArray.nextInt();
                 }
             }
-            if (!dat.load(byteArray, attributes) || byteArray.hasMore()) return false;
+            DoubleArrayTrie<CoreDictionary.Attribute> dat = new DoubleArrayTrie<CoreDictionary.Attribute>();
+            boolean res = dat.load(byteArray, attributes);
+            if (!res|| byteArray.hasMore()) return false;
+            else{
+                String []thisKey = path.split("/");
+                dats.put(thisKey[thisKey.length -1 ], dat);
+            }
+            
         }
         catch (Exception e)
         {

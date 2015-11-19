@@ -27,7 +27,8 @@ public enum Nature
      * 数语素
      */
     mg,
-
+    
+    
     /**
      * 名词性惯用语
      */
@@ -744,7 +745,7 @@ public enum Nature
      * 百分号千分号，全角：％ ‰   半角：%
      */
     wb,
-
+    
     /**
      * 单位符号，全角：￥ ＄ ￡  °  ℃  半角：$
      */
@@ -759,6 +760,11 @@ public enum Nature
      * 仅用于始##始，不会出现在分词结果中
      */
     begin,
+    
+    /**
+     * 音乐
+     */
+    music,
 
     ;
 
@@ -782,15 +788,5 @@ public enum Nature
     public boolean startsWith(char prefix)
     {
         return toString().charAt(0) == prefix;
-    }
-
-    /**
-     * 词性的首字母<br>
-     *     词性根据开头的几个字母可以判断大的类别
-     * @return
-     */
-    public char firstChar()
-    {
-        return toString().charAt(0);
     }
 }

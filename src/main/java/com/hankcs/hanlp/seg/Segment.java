@@ -184,52 +184,96 @@ public abstract class Segment
 
         return atomNodeList;
     }
-
+/**
+ * 取hash结果:确定以某字开始的词条 所在的dat->bin
+ * @param ch
+ * @return
+ */
+    protected static String hashTag(char ch){
+    	
+    	int b = ch;
+    	return "dic_" + String.valueOf(b % CustomDictionary.file_num + 1) + ".txt";
+    }
+    
+    /**
+     * 判断是不是需要的词性
+     * @param nature
+     * @return
+     */
+    protected static boolean hasNature(CoreDictionary.Attribute out, String nature){
+    	
+    	if(out == null) return false;
+    	if(nature.equals("")) return true;
+    	String []nats = nature.split(",");
+    	for(String nat : nats){
+    		try{
+	    		if(out.hasNature(Nature.valueOf(nat))){
+	    			return true;
+	    		}
+    		}catch(Exception e){
+    			System.out.println("Warning: " + nat + "is not a nature");
+    			continue;
+    		}
+    	}
+    	return false;
+    }
     /**
      * 使用用户词典合并粗分结果
      * @param vertexList 粗分结果
      * @return 合并后的结果
      */
-    protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList)
+    protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList) {
+    	return combineByCustomDictionary(vertexList,"");
+    }
+    
+    protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList, String CusNature)
     {
         Vertex[] wordNet = new Vertex[vertexList.size()];
         vertexList.toArray(wordNet);
         // DAT合并
-        DoubleArrayTrie<CoreDictionary.Attribute> dat = CustomDictionary.dat;
+        //DoubleArrayTrie<CoreDictionary.Attribute> dat = CustomDictionary.dats.get(0);
+       
         for (int i = 0; i < wordNet.length; ++i)
         {
-            int state = 1;
-            state = dat.transition(wordNet[i].realWord, state);
-            if (state > 0)
-            {
-                int start = i;
-                int to = i + 1;
-                int end = - 1;
-                CoreDictionary.Attribute value = null;
-                for (; to < wordNet.length; ++to)
-                {
-                    state = dat.transition(wordNet[to].realWord, state);
-                    if (state < 0) break;
-                    CoreDictionary.Attribute output = dat.output(state);
-                    if (output != null)
-                    {
-                        value = output;
-                        end = to + 1;
-                    }
-                }
-                if (value != null)
-                {
-                    StringBuilder sbTerm = new StringBuilder();
-                    for (int j = start; j < end; ++j)
-                    {
-                        sbTerm.append(wordNet[j]);
-                        wordNet[j] = null;
-                    }
-                    wordNet[i] = new Vertex(sbTerm.toString(), value);
-                    i = end - 1;
-                }
+            //  for(int ii = 0; ii< CustomDictionary.dats.size(); ii ++){ 
+        		String Tag = hashTag(wordNet[i].realWord.charAt(0));
+        	 	if(!CustomDictionary.dats.containsKey(Tag)) 
+        	 		continue;
+        	 	DoubleArrayTrie<CoreDictionary.Attribute> dat = CustomDictionary.dats.get(Tag);
+        	 	
+            	int state = 1;
+	            state = dat.transition(wordNet[i].realWord, state);
+	            if (state > 0)
+	            {
+	                int start = i;
+	                int to = i + 1;
+	                int end = - 1;
+	                CoreDictionary.Attribute value = null;
+	                for (; to < wordNet.length; ++to)
+	                {
+	                    state = dat.transition(wordNet[to].realWord, state);
+	                    if (state < 0) break;
+	                    CoreDictionary.Attribute output = dat.output(state);
+	                    if (hasNature(output, CusNature))
+	                    {
+	                        value = output;
+	                        end = to + 1;
+	                    }
+	                }
+	                if (value != null)
+	                {
+	                    StringBuilder sbTerm = new StringBuilder();
+	                    for (int j = start; j < end; ++j)
+	                    {
+	                        sbTerm.append(wordNet[j]);
+	                        wordNet[j] = null;
+	                    }
+	                    wordNet[i] = new Vertex(sbTerm.toString(), value);
+	                    i = end - 1;
+	                }
+	            }
             }
-        }
+        //}
         // BinTrie合并
         if (CustomDictionary.trie != null)
         {
@@ -248,7 +292,7 @@ public abstract class Segment
                         if (wordNet[to] == null) continue;
                         state = state.transition(wordNet[to].realWord.toCharArray(), 0);
                         if (state == null) break;
-                        if (state.getValue() != null)
+                        if (hasNature(state.getValue(), CusNature))
                         {
                             value = state.getValue();
                             end = to + 1;
