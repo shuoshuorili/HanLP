@@ -38,7 +38,7 @@ public class CustomDictionary
      */
     public static BinTrie<CoreDictionary.Attribute> trie;
     public static DoubleArrayTrie<CoreDictionary.Attribute> dat = new DoubleArrayTrie<CoreDictionary.Attribute>();
-    protected static int file_num = 59; // 切割的文件数
+    public static int file_num = 59; // 切割的文件数
     public static HashMap<String, DoubleArrayTrie<CoreDictionary.Attribute> > dats = new HashMap <String, DoubleArrayTrie<CoreDictionary.Attribute> >();
     /**
      *第一个是主词典，其他是副词典
