@@ -766,6 +766,15 @@ public enum Nature
      */
     music,
 
+	/**
+	 *idaddy_category
+	 */
+	idaddy_category,
+	
+	/**
+	 * idaddy_title
+	 */
+	idaddy_title,	
     ;
 
     /**
