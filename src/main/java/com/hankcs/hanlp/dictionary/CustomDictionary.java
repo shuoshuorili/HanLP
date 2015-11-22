@@ -37,7 +37,8 @@ public class CustomDictionary
      * 用于储存用户动态插入词条的二分trie树
      */
     public static BinTrie<CoreDictionary.Attribute> trie;
-    public static DoubleArrayTrie<CoreDictionary.Attribute> dat = new DoubleArrayTrie<CoreDictionary.Attribute>();
+    public static DoubleArrayTrie<CoreDictionary.Attribute> dat = null;
+    public static DoubleArrayTrie<CoreDictionary.Attribute> dat2 = new DoubleArrayTrie<CoreDictionary.Attribute>();
     public static int file_num = 59; // 切割的文件数
     public static HashMap<String, DoubleArrayTrie<CoreDictionary.Attribute> > dats = new HashMap <String, DoubleArrayTrie<CoreDictionary.Attribute> >();
     /**
@@ -57,11 +58,11 @@ public class CustomDictionary
 	        }
 	        else
 	        {
-	            logger.info("自定义词典加载成功:" + "耗时" + (System.currentTimeMillis() - start) + "ms");
+	            logger.info("自定义词典加载成功: " + dat2.size() + "条词语 ::耗时" + (System.currentTimeMillis() - start) + "ms");
 	        }
         }
-        if(dats.containsKey("CustomDictionary.txt"))
-        	dat = dats.get("CustomDictionary.txt"); // 为了兼容 add 的添加字典形式。
+//        if(dats.containsKey("CustomDictionary.txt"))
+//        	dat = dats.get("CustomDictionary.txt"); // 为了兼容 add 的添加字典形式。
     }
 
     private static boolean loadMainDictionary(String mainPath)
@@ -92,14 +93,12 @@ public class CustomDictionary
                 }
                 logger.info("以默认词性[" + defaultNature + "]加载自定义词典" + p + "中……");
                 boolean success = load(p, defaultNature, map);
-                if (!success){
-				   	logger.warning("失败：" + p);
-					return false;
-				}
+                if (!success) logger.warning("失败：" + p);
             }
             logger.info("正在构建DoubleArrayTrie……");
-            DoubleArrayTrie<CoreDictionary.Attribute> dat = new DoubleArrayTrie<CoreDictionary.Attribute>();
-            dat.build(map);
+            
+            dat2 = new DoubleArrayTrie<CoreDictionary.Attribute>();
+            dat2.build(map);
             // 缓存成dat文件，下次加载会快很多
             logger.info("正在缓存词典为dat文件……");
             // 缓存值文件
@@ -120,9 +119,9 @@ public class CustomDictionary
                     out.writeInt(attribute.frequency[i]);
                 }
             }
-            dat.save(out);
+            dat2.save(out);
             String []thisKey = mainPath.split("/");
-            dats.put(thisKey[thisKey.length -1], dat);
+            dats.put(thisKey[thisKey.length -1], dat2);
             out.close();
         }
         catch (FileNotFoundException e)
@@ -246,7 +245,7 @@ public class CustomDictionary
         if (HanLP.Config.Normalization) word = CharTable.convert(word);
         CoreDictionary.Attribute att = natureWithFrequency == null ? new CoreDictionary.Attribute(Nature.nz, 1) : CoreDictionary.Attribute.create(natureWithFrequency);
         if (att == null) return false;
-        if (dat.set(word, att)) return true;
+        if (dat!=null && dat.set(word, att)) return true;
         if (trie == null) trie = new BinTrie<CoreDictionary.Attribute>();
         trie.put(word, att);
         return true;
@@ -290,12 +289,12 @@ public class CustomDictionary
                     attributes[i].frequency[j] = byteArray.nextInt();
                 }
             }
-            DoubleArrayTrie<CoreDictionary.Attribute> dat = new DoubleArrayTrie<CoreDictionary.Attribute>();
-            boolean res = dat.load(byteArray, attributes);
+            dat2 = new DoubleArrayTrie<CoreDictionary.Attribute>();
+            boolean res = dat2.load(byteArray, attributes);
             if (!res|| byteArray.hasMore()) return false;
             else{
                 String []thisKey = path.split("/");
-                dats.put(thisKey[thisKey.length -1 ], dat);
+                dats.put(thisKey[thisKey.length -1 ], dat2);
             }
             
         }
@@ -316,7 +315,9 @@ public class CustomDictionary
     public static CoreDictionary.Attribute get(String key)
     {
         if (HanLP.Config.Normalization) key = CharTable.convert(key);
-        CoreDictionary.Attribute attribute = dat.get(key);
+        CoreDictionary.Attribute attribute = null;
+        if(dat!=null )
+        	attribute = dat.get(key);
         if (attribute != null) return attribute;
         if (trie == null) return null;
         return trie.get(key);
@@ -377,7 +378,7 @@ public class CustomDictionary
      */
     public static boolean contains(String key)
     {
-        if (dat.exactMatchSearch(key) >= 0) return true;
+        if (dat!=null && dat.exactMatchSearch(key) >= 0) return true;
         return trie != null && trie.containsKey(key);
     }
 
@@ -467,7 +468,8 @@ public class CustomDictionary
                 processor.hit(offset, offset + entry.getKey().length(), entry.getValue());
             }
         }
-        DoubleArrayTrie<CoreDictionary.Attribute>.Searcher searcher = dat.getSearcher(text, 0);
+        DoubleArrayTrie<CoreDictionary.Attribute>.Searcher searcher = null;
+        if(dat!=null) searcher = dat.getSearcher(text, 0);
         while (searcher.next())
         {
             processor.hit(searcher.begin, searcher.begin + searcher.length, searcher.value);
