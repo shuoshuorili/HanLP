@@ -225,8 +225,13 @@ public abstract class Segment
     protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList) {
     	return combineByCustomDictionary(vertexList,"");
     }
+
+
+    protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList, String CusNature) {
+    	return combineByCustomDictionary(vertexList,"",1);
+    }
     
-    protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList, String CusNature)
+    protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList, String CusNature,int lowBound)
     {
         Vertex[] wordNet = new Vertex[vertexList.size()];
         vertexList.toArray(wordNet);
@@ -235,7 +240,6 @@ public abstract class Segment
        
         for (int i = 0; i < wordNet.length; ++i)
         {
-            //  for(int ii = 0; ii< CustomDictionary.dats.size(); ii ++){ 
         		String Tag = hashTag(wordNet[i].realWord.charAt(0));
         	 	if(!CustomDictionary.dats.containsKey(Tag)) 
         	 		continue;
@@ -248,19 +252,22 @@ public abstract class Segment
 	                int start = i;
 	                int to = i + 1;
 	                int end = - 1;
+					int len = wordNet[i].realWord.length();
 	                CoreDictionary.Attribute value = null;
 	                for (; to < wordNet.length; ++to)
 	                {
 	                    state = dat.transition(wordNet[to].realWord, state);
 	                    if (state < 0) break;
 	                    CoreDictionary.Attribute output = dat.output(state);
+						len += wordNet[to].realWord.length();
 	                    if (hasNature(output, CusNature))
 	                    {
 	                        value = output;
 	                        end = to + 1;
+
 	                    }
 	                }
-	                if (value != null)
+	                if (value != null && len >= lowBound)
 	                {
 	                    StringBuilder sbTerm = new StringBuilder();
 	                    for (int j = start; j < end; ++j)

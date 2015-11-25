@@ -775,6 +775,11 @@ public enum Nature
 	 * idaddy_title
 	 */
 	idaddy_title,	
+
+	/**
+	 * 连锁
+	 */
+	nsc,
     ;
 
     /**
