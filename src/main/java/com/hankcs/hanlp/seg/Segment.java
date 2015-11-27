@@ -228,7 +228,7 @@ public abstract class Segment
 
 
     protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList, String CusNature) {
-    	return combineByCustomDictionary(vertexList,"",1);
+    	return combineByCustomDictionary(vertexList,CusNature,1);
     }
     
     protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList, String CusNature,int lowBound)
@@ -251,9 +251,9 @@ public abstract class Segment
 	            {
 	                int start = i;
 	                int to = i + 1;
-	                int end = - 1;
+	                int end = to;
 					int len = wordNet[i].realWord.length();
-	                CoreDictionary.Attribute value = null;
+	                CoreDictionary.Attribute value = dat.output(state);
 	                for (; to < wordNet.length; ++to)
 	                {
 	                    state = dat.transition(wordNet[to].realWord, state);
@@ -292,8 +292,8 @@ public abstract class Segment
                 {
                     int start = i;
                     int to = i + 1;
-                    int end = - 1;
-                    CoreDictionary.Attribute value = null;
+                    int end = to;
+                    CoreDictionary.Attribute value = state.getValue();
                     for (; to < wordNet.length; ++to)
                     {
                         if (wordNet[to] == null) continue;
