@@ -207,7 +207,8 @@ public abstract class Segment
     	String []nats = nature.split(",");
     	for(String nat : nats){
     		try{
-	    		if(out.hasNature(Nature.valueOf(nat))){
+	    		if(out.hasNature(Nature.valueOf(nat)) ||(nat.equals("ns") &&
+							(out.hasNature(Nature.nsa)||out.hasNature(Nature.nsr)||out.hasNature(Nature.nsc)))){
 	    			return true;
 	    		}
     		}catch(Exception e){

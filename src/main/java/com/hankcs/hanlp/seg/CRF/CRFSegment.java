@@ -74,16 +74,16 @@ public class CRFSegment extends CharacterBasedGenerativeModelSegment
                     }
                     if (i == table.v.length)
                     {
-                        termList.add(new Term(new String(sentence, begin, offset - begin), null));
+                        termList.add(new Term(new String(sentence, begin, offset - begin), Nature.x));
                         break OUTER;
                     }
                     else
-                        termList.add(new Term(new String(sentence, begin, offset - begin + table.v[i][1].length()), null));
+                        termList.add(new Term(new String(sentence, begin, offset - begin + table.v[i][1].length()), Nature.ns));
                 }
                 break;
                 default:
                 {
-                    termList.add(new Term(new String(sentence, offset, table.v[i][1].length()), null));
+                    termList.add(new Term(new String(sentence, offset, table.v[i][1].length()), Nature.x));
                 }
                 break;
             }
