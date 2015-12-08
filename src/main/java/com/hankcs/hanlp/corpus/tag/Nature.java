@@ -27,8 +27,8 @@ public enum Nature
      * 数语素
      */
     mg,
-    
-    
+
+
     /**
      * 名词性惯用语
      */
@@ -745,7 +745,7 @@ public enum Nature
      * 百分号千分号，全角：％ ‰   半角：%
      */
     wb,
-    
+
     /**
      * 单位符号，全角：￥ ＄ ￡  °  ℃  半角：$
      */
@@ -760,7 +760,7 @@ public enum Nature
      * 仅用于始##始，不会出现在分词结果中
      */
     begin,
-    
+
     /**
      * 音乐
      */
@@ -770,11 +770,11 @@ public enum Nature
 	 *idaddy_category
 	 */
 	idaddy_category,
-	
+
 	/**
 	 * idaddy_title
 	 */
-	idaddy_title,	
+	idaddy_title,
 
 	/**
 	 * 连锁
@@ -790,6 +790,34 @@ public enum Nature
 	 * 行政区
 	 */
 	nsr,
+
+    /**
+     * placehoder
+     */
+
+    tid001,
+    tid002,
+    tid003,
+    tid004,
+    tid005,
+    tid006,
+    tid007,
+    tid008,
+    tid009,
+    tid010,
+    tid011,
+    tid012,
+    tid013,
+    tid014,
+    tid015,
+    tid016,
+    tid017,
+    tid018,
+    tid019,
+    tid020,
+
+
+
 
 	;
 

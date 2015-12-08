@@ -18,7 +18,8 @@ import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.ArrayList;
+import java.util.List;
 /**
  * 节点，统一Trie树根和其他节点的基类
  *
@@ -47,6 +48,7 @@ public abstract class BaseNode<V> implements Comparable<BaseNode>
      * 节点代表的值
      */
     protected V value;
+    protected ArrayList<V> values;
 
     public BaseNode<V> transition(char[] path, int begin)
     {
@@ -99,6 +101,11 @@ public abstract class BaseNode<V> implements Comparable<BaseNode>
     {
         return value;
     }
+    public final ArrayList<V> getValues()
+    {
+        return values;
+    }
+
 
     /**
      * 设置节点对应的值

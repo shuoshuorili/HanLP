@@ -99,7 +99,7 @@ public class CustomDictionary
 				}
             }
             logger.info("正在构建DoubleArrayTrie……");
-            
+
             dat2 = new DoubleArrayTrie<CoreDictionary.Attribute>();
             dat2.build(map);
             // 缓存成dat文件，下次加载会快很多
@@ -218,8 +218,8 @@ public class CustomDictionary
      */
     public static boolean add(String word, String natureWithFrequency)
     {
-        if (contains(word)) return false;
-        return insert(word, natureWithFrequency);
+    //     if (contains(word)) return false;
+        return insert(word, natureWithFrequency,contains(word));
     }
 
     /**
@@ -242,6 +242,18 @@ public class CustomDictionary
      * @param natureWithFrequency 词性和其对应的频次，比如“nz 1 v 2”，null时表示“nz 1”。
      * @return 是否插入成功（失败的原因可能是natureWithFrequency问题，可以通过调试模式了解原因）
      */
+
+    public static boolean insert(String word,String natureWithFrequency,boolean isExist){
+    	if (word == null) return false;
+        if (HanLP.Config.Normalization) word = CharTable.convert(word);
+        CoreDictionary.Attribute att = natureWithFrequency == null ? new CoreDictionary.Attribute(Nature.nz, 1) : CoreDictionary.Attribute.create(natureWithFrequency);
+        if (att == null) return false;
+        if (dat!=null && dat.set(word, att)) return true;
+        if (trie == null) trie = new BinTrie<CoreDictionary.Attribute>();
+        trie.put(word, att,isExist);
+        return true;
+    }
+
     public static boolean insert(String word, String natureWithFrequency)
     {
         if (word == null) return false;
@@ -299,7 +311,7 @@ public class CustomDictionary
                 String []thisKey = path.split("/");
                 dats.put(thisKey[thisKey.length -1 ], dat2);
             }
-            
+
         }
         catch (Exception e)
         {

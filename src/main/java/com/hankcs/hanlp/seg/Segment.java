@@ -190,18 +190,18 @@ public abstract class Segment
  * @return
  */
     protected static String hashTag(char ch){
-    	
+
     	int b = ch;
     	return "dic_" + String.valueOf(b % CustomDictionary.file_num + 1) + ".txt";
     }
-    
+
     /**
      * 判断是不是需要的词性
      * @param nature
      * @return
      */
     protected static boolean hasNature(CoreDictionary.Attribute out, String nature){
-    	
+
     	if(out == null) return false;
     	if(nature.equals("")) return true;
     	String []nats = nature.split(",");
@@ -218,6 +218,30 @@ public abstract class Segment
     	}
     	return false;
     }
+
+
+ protected static CoreDictionary.Attribute hasNature(ArrayList<CoreDictionary.Attribute> outs, String nature){
+
+     	if(outs == null || outs.size() == 0) return null;
+     	if(nature.equals("")) return outs.get(0);
+     	String []nats = nature.split(",");
+     	for(String nat : nats){
+     		for(CoreDictionary.Attribute out : outs){
+     		try{
+ 	    		if(out.hasNature(Nature.valueOf(nat))|| (nat.equals("ns")&&
+ 	    				out.hasNature(Nature.nsa)|| out.hasNature(Nature.nsc) || out.hasNature(Nature.nsr))){
+ 	    			return out;
+ 	    		}
+     		}catch(Exception e){
+     			System.out.println("Warning: " + nat + "is not a nature");
+     			continue;
+     		}
+     	}
+     }
+
+     	return null;
+     }
+
     /**
      * 使用用户词典合并粗分结果
      * @param vertexList 粗分结果
@@ -231,21 +255,21 @@ public abstract class Segment
     protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList, String CusNature) {
     	return combineByCustomDictionary(vertexList,CusNature,1);
     }
-    
+
     protected static List<Vertex> combineByCustomDictionary(List<Vertex> vertexList, String CusNature,int lowBound)
     {
         Vertex[] wordNet = new Vertex[vertexList.size()];
         vertexList.toArray(wordNet);
         // DAT合并
         //DoubleArrayTrie<CoreDictionary.Attribute> dat = CustomDictionary.dats.get(0);
-       
+
         for (int i = 0; i < wordNet.length; ++i)
         {
         		String Tag = hashTag(wordNet[i].realWord.charAt(0));
-        	 	if(!CustomDictionary.dats.containsKey(Tag)) 
+        	 	if(!CustomDictionary.dats.containsKey(Tag))
         	 		continue;
         	 	DoubleArrayTrie<CoreDictionary.Attribute> dat = CustomDictionary.dats.get(Tag);
-        	 	
+
             	int state = 1;
 	            state = dat.transition(wordNet[i].realWord, state);
 	            if (state > 0)
@@ -294,15 +318,19 @@ public abstract class Segment
                     int start = i;
                     int to = i + 1;
                     int end = to;
-                    CoreDictionary.Attribute value = state.getValue();
+
+                    ArrayList<CoreDictionary.Attribute>  values = state.getValues();
+                    CoreDictionary.Attribute value = hasNature(state.getValues(), CusNature);
+                    CoreDictionary.Attribute  tmp_val=null;
                     for (; to < wordNet.length; ++to)
                     {
                         if (wordNet[to] == null) continue;
                         state = state.transition(wordNet[to].realWord.toCharArray(), 0);
                         if (state == null) break;
-                        if (hasNature(state.getValue(), CusNature))
+                        tmp_val = hasNature(state.getValues(), CusNature);
+                        if (tmp_val!=null)
                         {
-                            value = state.getValue();
+                            value = tmp_val;
                             end = to + 1;
                         }
                     }

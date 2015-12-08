@@ -58,6 +58,9 @@ public class BinTrie<V> extends BaseNode<V> implements ITrie<V>
         // 最后一个字加入时属性为end
         if (branch.addChild(new Node<V>(chars[chars.length - 1], Status.WORD_END_3, value)))
         {
+
+            branch.getChild(chars[chars.length - 1]).values = new ArrayList<V>();
+            branch.getChild(chars[chars.length - 1]).values.add(value);
             ++size; // 维护size
         }
     }
@@ -78,6 +81,22 @@ public class BinTrie<V> extends BaseNode<V> implements ITrie<V>
         }
     }
 
+     public void put(String key, V value, boolean isExist){
+
+     	if(!isExist) {
+     		put(key,value);
+     	}
+     	else{
+ 	    	BaseNode branch = this;
+ 	    	char []chars = key.toCharArray();
+ 	    	 for (int i = 0; i < chars.length - 1; ++i)
+ 	         {
+ 	             if (branch == null) return;
+ 	             branch = branch.getChild(chars[i]);
+ 	         }
+ 	    	branch.getChild(chars[chars.length - 1]).values.add(value);
+     	}
+     }
     /**
      * 设置键值对，当键不存在的时候会自动插入
      * @param key
